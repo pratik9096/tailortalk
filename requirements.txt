@@ -25,19 +25,15 @@
 # pydantic==2.5.0
 # pydantic-settings==2.1.0
 
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-streamlit==1.28.0
-requests==2.31.0
-python-dotenv==1.0.0
-google-auth==2.25.2
-google-auth-oauthlib==1.2.0
-google-auth-httplib2==0.2.0
-google-api-python-client==2.107.0
-langchain==0.2.2
-langchain-core==0.2.5
-langchain-groq==0.1.6
+streamlit
+requests
+python-dotenv
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+langchain
+langchain-core
+langchain-groq
 groq
-pydantic==2.5.0
-pydantic-settings==2.1.0
-streamlit==1.32.0
+pydantic
