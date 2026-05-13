@@ -260,7 +260,7 @@ from google.oauth2.service_account import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-from langchain_core.tools import Tool
+from langchain_core.tools import StructuredTool
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
