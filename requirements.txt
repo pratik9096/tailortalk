@@ -24,7 +24,6 @@
 
 # pydantic==2.5.0
 # pydantic-settings==2.1.0
-
 streamlit
 requests
 python-dotenv
@@ -37,3 +36,5 @@ langchain-core
 langchain-groq
 groq
 pydantic
+fastapi
+uvicorn[standard]
