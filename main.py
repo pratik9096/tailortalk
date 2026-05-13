@@ -248,11 +248,6 @@
 
 
 # new code
-"""
-TailorTalk - Google Drive Search Agent
-FastAPI Backend
-"""
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -278,7 +273,6 @@ load_dotenv()
 
 app = FastAPI(title="TailorTalk", version="1.0")
 
-# Add CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -289,13 +283,20 @@ app.add_middleware(
 
 
 class GoogleDrive:
-    """Google Drive API handler"""
-
     def __init__(self):
-        self.credentials = Credentials.from_service_account_file(
-            "key.json",
-            scopes=['https://www.googleapis.com/auth/drive']
-        )
+        service_account_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+
+        if service_account_json:
+            service_account_info = json.loads(service_account_json)
+            self.credentials = Credentials.from_service_account_info(
+                service_account_info,
+                scopes=['https://www.googleapis.com/auth/drive']
+            )
+        else:
+            self.credentials = Credentials.from_service_account_file(
+                "key.json",
+                scopes=['https://www.googleapis.com/auth/drive']
+            )
 
         self.service = build('drive', 'v3', credentials=self.credentials)
         self.folder_id = os.getenv("DRIVE_FOLDER_ID")
@@ -304,25 +305,20 @@ class GoogleDrive:
             raise ValueError("Missing DRIVE_FOLDER_ID")
 
     def search(self, query: str):
-        """Search files with given query"""
         try:
             full_query = f"'{self.folder_id}' in parents and trashed=false and {query}"
-
             results = self.service.files().list(
                 q=full_query,
                 spaces='drive',
                 fields='files(id, name, mimeType, createdTime, modifiedTime, size, webViewLink)',
                 pageSize=10,
             ).execute()
-
             return results.get('files', [])
-
         except Exception as e:
             print(f"Drive search error: {e}")
             return []
 
 
-# Initialize
 try:
     drive = GoogleDrive()
 except Exception as e:
@@ -330,7 +326,6 @@ except Exception as e:
     drive = None
 
 
-# Request/Response models
 class SearchRequest(BaseModel):
     query: str
     conversation_history: Optional[list] = None
@@ -342,41 +337,31 @@ class SearchResponse(BaseModel):
     query_used: str
 
 
-# Global variable to capture files found by the agent tool
 found_files = []
 
 
-# Search tool for the agent
 def drive_search(search_query: str) -> str:
-    """Search Google Drive"""
     global found_files
-
     if not drive:
         return "Error: Drive not connected"
-
     files = drive.search(search_query)
-    found_files = files  # Capture files so they can be returned to frontend
-
+    found_files = files
     if not files:
         return "No files found."
-
     result = f"Found {len(files)} files:\n\n"
     for f in files:
         result += f"📄 {f['name']}\n"
         result += f"   Type: {f.get('mimeType', 'Unknown')}\n"
         result += f"   Modified: {f.get('modifiedTime', 'Unknown')}\n"
         result += f"   [Open]({f.get('webViewLink', '#')})\n\n"
-
     return result
 
 
-# Setup LangChain
 tools = [
     Tool(
         name="GoogleDriveSearch",
         func=drive_search,
         description="""Search Google Drive files.
-
 Generate queries like:
 - name contains 'report'
 - mimeType='application/pdf'
@@ -394,7 +379,6 @@ llm = ChatGroq(
 )
 
 system_prompt = """You are a helpful assistant that searches Google Drive files.
-
 When users ask to find files, you:
 1. Understand what they're looking for
 2. Use the GoogleDriveSearch tool to find files
@@ -420,7 +404,6 @@ agent = create_tool_calling_agent(llm, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=5)
 
 
-# Endpoints
 @app.get("/")
 async def root():
     return {"status": "TailorTalk API", "version": "1.0"}
@@ -439,11 +422,10 @@ async def health():
 @app.post("/search")
 async def search(request: SearchRequest):
     global found_files
-    found_files = []  # Reset before each new search
+    found_files = []
 
     try:
         chat_history = []
-
         if request.conversation_history:
             for msg in request.conversation_history:
                 if not msg:
@@ -462,7 +444,7 @@ async def search(request: SearchRequest):
 
         return {
             "response": result.get("output", "No response"),
-            "files": found_files,   # Now returns actual files to frontend
+            "files": found_files,
             "query_used": request.query
         }
 
