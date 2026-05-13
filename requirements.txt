@@ -40,3 +40,4 @@ langchain-groq==0.1.6
 groq
 pydantic==2.5.0
 pydantic-settings==2.1.0
+streamlit==1.32.0
