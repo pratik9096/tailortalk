@@ -75,7 +75,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # API URL
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://web-production-3e422.up.railway.app"
 
 with st.sidebar:
     st.title("⚙️ Settings")
