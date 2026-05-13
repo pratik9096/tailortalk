@@ -218,7 +218,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pydantic import BaseModel as PydanticBaseModel
+from langchain_core.pydantic_v1 import BaseModel as PydanticBaseModel
 from typing import Optional
 import json
 import os
